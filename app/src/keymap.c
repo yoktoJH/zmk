@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <dt-bindings\zmk\keys.h>
+#include <dt-bindings/zmk/keys.h>
 
 #include <drivers/behavior.h>
 #include <zephyr/sys/util.h>
@@ -172,8 +172,11 @@ int zmk_keymap_apply_position_state(uint8_t source, int layer, uint32_t position
                                     int64_t timestamp) {
     // We want to make a copy of this, since it may be converted from
     // relative to absolute before being invoked
-    zmk_keymap[layer][1].behavior_dev ="kp";//"key_press";
-    zmk_keymap[layer][1].param1 = X; 
+    if(position == 0){
+        zmk_keymap[layer][1].behavior_dev ="key_press";
+        zmk_keymap[layer][1].param1 = X; 
+    }
+    
     struct zmk_behavior_binding binding = zmk_keymap[layer][position];
     const struct device *behavior;
     struct zmk_behavior_binding_event event = {
