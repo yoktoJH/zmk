@@ -10,4 +10,4 @@ __pycache__
 .python-version
 .venv
 .vscode
-app\.cache\clangd
+app/.cache/clangd
