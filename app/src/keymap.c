@@ -170,13 +170,14 @@ int invoke_locally(struct zmk_behavior_binding *binding, struct zmk_behavior_bin
 
 int zmk_keymap_apply_position_state(uint8_t source, int layer, uint32_t position, bool pressed,
                                     int64_t timestamp) {
-    // We want to make a copy of this, since it may be converted from
-    // relative to absolute before being invoked
+    
     if(position == 0){
         zmk_keymap[layer][1].behavior_dev ="key_press";
         zmk_keymap[layer][1].param1 = X; 
     }
     
+    // We want to make a copy of this, since it may be converted from
+    // relative to absolute before being invoked
     struct zmk_behavior_binding binding = zmk_keymap[layer][position];
     const struct device *behavior;
     struct zmk_behavior_binding_event event = {
@@ -336,3 +337,15 @@ ZMK_SUBSCRIPTION(keymap, zmk_position_state_changed);
 #if ZMK_KEYMAP_HAS_SENSORS
 ZMK_SUBSCRIPTION(keymap, zmk_sensor_event);
 #endif /* ZMK_KEYMAP_HAS_SENSORS */
+
+//--------------------- my stuff
+int change_mapping(int layer, uint32_t position,char* behaviour_dev,uint32_t param1,uint32_t param2){
+    zmk_keymap[layer][position].behavior_dev = behaviour_dev;
+    zmk_keymap[layer][position].param1 = param1; 
+    zmk_keymap[layer][position].param2 = param2;
+}
+int change_sensor_mapping(int layer, uint32_t position,char* behaviour_dev,uint32_t param1,uint32_t param2){
+    zmk_sensor_keymap[layer][position].behavior_dev = behaviour_dev;
+    zmk_sensor_keymap[layer][position].param1 = param1; 
+    zmk_sensor_keymap[layer][position].param2 = param2;
+}
