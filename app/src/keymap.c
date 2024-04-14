@@ -31,6 +31,11 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 static zmk_keymap_layers_state_t _zmk_keymap_layer_state = 0;
 static uint8_t _zmk_keymap_layer_default = 0;
 
+//---- vial stuff
+#include "vial-compatibility/binding-names.h"
+const char* all_names[] = {DT_FOREACH_CHILD_SEP(DT_PATH(behaviors),DT_NODE_FULL_NAME,(,))} ;
+//----
+
 #define DT_DRV_COMPAT zmk_keymap
 
 #define TRANSFORMED_LAYER(node)                                                                    \
@@ -185,7 +190,7 @@ int zmk_keymap_apply_position_state(uint8_t source, int layer, uint32_t position
         .position = position,
         .timestamp = timestamp,
     };
-
+    LOG_DBG("testing names macro %s",all_names[10]);
     LOG_DBG("layer: %d position: %d, binding name: %s", layer, position, binding.behavior_dev);
 
     behavior = zmk_behavior_get_binding(binding.behavior_dev);
@@ -344,8 +349,13 @@ int change_mapping(int layer, uint32_t position,char* behaviour_dev,uint32_t par
     zmk_keymap[layer][position].param1 = param1; 
     zmk_keymap[layer][position].param2 = param2;
 }
+
+
+#if ZMK_KEYMAP_HAS_SENSORS
+
 int change_sensor_mapping(int layer, uint32_t position,char* behaviour_dev,uint32_t param1,uint32_t param2){
     zmk_sensor_keymap[layer][position].behavior_dev = behaviour_dev;
     zmk_sensor_keymap[layer][position].param1 = param1; 
     zmk_sensor_keymap[layer][position].param2 = param2;
 }
+#endif /* ZMK_KEYMAP_HAS_SENSORS */
