@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+
 #include <dt-bindings/zmk/keys.h>
 
 #include <drivers/behavior.h>
@@ -33,7 +34,10 @@ static uint8_t _zmk_keymap_layer_default = 0;
 
 //---- vial stuff
 #include "vial-compatibility/binding-names.h"
+//#include "vial-compatibility/keymap_editor.h"
 const char* all_names[] = {DT_FOREACH_CHILD_SEP(DT_PATH(behaviors),DT_NODE_FULL_NAME,(,))} ;
+// what was chatgpt smoking
+//#define BEHAVIOR_COUNT DT_NUM_CHILDREN(DT_PATH(behaviours));
 //----
 
 #define DT_DRV_COMPAT zmk_keymap
@@ -175,6 +179,8 @@ int invoke_locally(struct zmk_behavior_binding *binding, struct zmk_behavior_bin
 
 int zmk_keymap_apply_position_state(uint8_t source, int layer, uint32_t position, bool pressed,
                                     int64_t timestamp) {
+    
+
     
     if(position == 0){
         zmk_keymap[layer][1].behavior_dev ="key_press";
@@ -345,9 +351,14 @@ ZMK_SUBSCRIPTION(keymap, zmk_sensor_event);
 
 //--------------------- my stuff
 int change_mapping(int layer, uint32_t position,char* behaviour_dev,uint32_t param1,uint32_t param2){
+
+
     zmk_keymap[layer][position].behavior_dev = behaviour_dev;
     zmk_keymap[layer][position].param1 = param1; 
     zmk_keymap[layer][position].param2 = param2;
+    // for starters we can manually save all settings every time user edits the keymap
+    // while not the safest its definitely the best option
+
 }
 
 
