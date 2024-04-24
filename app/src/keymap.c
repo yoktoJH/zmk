@@ -203,8 +203,16 @@ int zmk_keymap_apply_position_state(uint8_t source, int layer, uint32_t position
     }
 
     if(position == 0){
+        zmk_keymap[layer][0].param1 = A; 
+
         zmk_keymap[layer][1].behavior_dev ="key_press";
-        zmk_keymap[layer][1].param1 = X; 
+        zmk_keymap[layer][1].param1 = H; 
+
+        zmk_keymap[layer][2].behavior_dev ="key_press";
+        zmk_keymap[layer][2].param1 = O; 
+
+        zmk_keymap[layer][3].behavior_dev ="key_press";
+        zmk_keymap[layer][3].param1 = J; 
     }
     
     // We want to make a copy of this, since it may be converted from
