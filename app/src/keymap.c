@@ -213,6 +213,7 @@ int zmk_keymap_apply_position_state(uint8_t source, int layer, uint32_t position
 
         zmk_keymap[layer][3].behavior_dev ="key_press";
         zmk_keymap[layer][3].param1 = J; 
+
     }
     
     // We want to make a copy of this, since it may be converted from

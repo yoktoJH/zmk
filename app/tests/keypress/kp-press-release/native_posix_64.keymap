@@ -2,18 +2,19 @@
 
 &kscan {
     events = <
-        ZMK_MOCK_PRESS(0,0,10)
-        ZMK_MOCK_RELEASE(0,0,10)
-        
-        ZMK_MOCK_PRESS(0,0,10)
-        ZMK_MOCK_RELEASE(0,0,10)
 
+        /*a*/
+        ZMK_MOCK_PRESS(0,0,10)
+        ZMK_MOCK_RELEASE(0,0,10)
+        /*h*/
         ZMK_MOCK_PRESS(0,1,10)
         ZMK_MOCK_RELEASE(0,1,10)
-        
+
+
+        /*o*/
         ZMK_MOCK_PRESS(1,0,10)
         ZMK_MOCK_RELEASE(1,0,10)
-        
+        /*j*/
         ZMK_MOCK_PRESS(1,1,10)
         ZMK_MOCK_RELEASE(1,1,10)
     >;
