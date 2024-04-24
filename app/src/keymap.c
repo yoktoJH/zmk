@@ -40,7 +40,7 @@ static uint8_t _zmk_keymap_layer_default = 0;
 int vial_init(); 
 char* all_names[] = {DT_FOREACH_CHILD_SEP(DT_PATH(behaviors),DT_NODE_FULL_NAME,(,))} ;
 static bool init_done = false;
-
+int change_mapping(int layer, uint32_t position,char* behaviour_dev,uint32_t param1,uint32_t param2);
 
 struct zmk_behavior_binding_storage {
     uint32_t index;
@@ -214,7 +214,7 @@ int zmk_keymap_apply_position_state(uint8_t source, int layer, uint32_t position
 
        /* zmk_keymap[layer][2].behavior_dev ="key_press";
         zmk_keymap[layer][2].param1 = O; */
-        change_mapping(layer,2,zmk_keymap[layer][0].behavior_dev,H,0);
+        change_mapping(layer,2,zmk_keymap[layer][0].behavior_dev,O,0);
 
        /* zmk_keymap[layer][3].behavior_dev ="key_press";
         zmk_keymap[layer][3].param1 = J; */
