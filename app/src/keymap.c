@@ -38,7 +38,7 @@ static uint8_t _zmk_keymap_layer_default = 0;
 #include "vial-compatibility/binding-names.h"
 //#include "vial-compatibility/keymap_editor.h"
 int vial_init(); 
-const char* all_names[] = {DT_FOREACH_CHILD_SEP(DT_PATH(behaviors),DT_NODE_FULL_NAME,(,))} ;
+char* all_names[] = {DT_FOREACH_CHILD_SEP(DT_PATH(behaviors),DT_NODE_FULL_NAME,(,))} ;
 static bool init_done = false;
 
 
@@ -455,7 +455,7 @@ void load_key_mapping(int layer, int key) {
     int ret = settings_runtime_get(path, (void *) &(zmk_keymap_storage[layer][key]),
                                    sizeof(struct zmk_behavior_binding_storage));
     if (ret != sizeof(struct zmk_behavior_binding_storage)) {
-        LOG_ERR("failed to save keybind layer: %d, key %d", layer, key);
+        LOG_ERR("failed to load keybind layer: %d, key %d", layer, key);
         return;
     }
     copy_from_storage_array(layer, key);
