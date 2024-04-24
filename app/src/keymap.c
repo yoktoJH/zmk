@@ -33,9 +33,25 @@ static zmk_keymap_layers_state_t _zmk_keymap_layer_state = 0;
 static uint8_t _zmk_keymap_layer_default = 0;
 
 //---- vial stuff
+
+#include <zephyr/settings/settings.h>
 #include "vial-compatibility/binding-names.h"
 //#include "vial-compatibility/keymap_editor.h"
+int vial_init(); 
 const char* all_names[] = {DT_FOREACH_CHILD_SEP(DT_PATH(behaviors),DT_NODE_FULL_NAME,(,))} ;
+static bool init_done = false;
+
+
+struct zmk_behavior_binding_storage {
+    uint32_t index;
+    uint32_t param1;
+    uint32_t param2;
+};
+
+
+
+struct zmk_behavior_binding_storage zmk_keymap_storage[ZMK_KEYMAP_LAYERS_LEN][ZMK_KEYMAP_LEN];
+
 // what was chatgpt smoking
 //#define BEHAVIOR_COUNT DT_NUM_CHILDREN(DT_PATH(behaviours));
 //----
@@ -181,7 +197,11 @@ int zmk_keymap_apply_position_state(uint8_t source, int layer, uint32_t position
                                     int64_t timestamp) {
     
 
-    
+    if(!init_done){
+        vial_init();
+        init_done = true;
+    }
+
     if(position == 0){
         zmk_keymap[layer][1].behavior_dev ="key_press";
         zmk_keymap[layer][1].param1 = X; 
@@ -358,6 +378,7 @@ int change_mapping(int layer, uint32_t position,char* behaviour_dev,uint32_t par
     zmk_keymap[layer][position].param2 = param2;
     // for starters we can manually save all settings every time user edits the keymap
     // while not the safest its definitely the best option
+    return 0;
 
 }
 
@@ -368,5 +389,113 @@ int change_sensor_mapping(int layer, uint32_t position,char* behaviour_dev,uint3
     zmk_sensor_keymap[layer][position].behavior_dev = behaviour_dev;
     zmk_sensor_keymap[layer][position].param1 = param1; 
     zmk_sensor_keymap[layer][position].param2 = param2;
+    return 0;
 }
 #endif /* ZMK_KEYMAP_HAS_SENSORS */
+
+
+
+int find_binding_name(char *name) {
+
+    int size = sizeof(all_names) / sizeof(char *);
+    for (size_t i = 0; i < size; i++) {
+        if (strcmp(name, all_names[i]) == 0) {
+            return i;
+        }
+    }
+    // this should never happen
+    return -1;
+}
+
+void copy_to_storage_array(int layer, int key) {
+    zmk_keymap_storage[layer][key].index = find_binding_name(zmk_keymap[layer][key].behavior_dev);
+    zmk_keymap_storage[layer][key].param1 = zmk_keymap[layer][key].param1;
+    zmk_keymap_storage[layer][key].param2 = zmk_keymap[layer][key].param2;
+}
+
+void copy_from_storage_array(int layer, int key) {
+    zmk_keymap[layer][key].behavior_dev = all_names[zmk_keymap_storage[layer][key].index];
+    zmk_keymap[layer][key].param1 = zmk_keymap_storage[layer][key].param1;
+    zmk_keymap[layer][key].param2 = zmk_keymap_storage[layer][key].param2;
+}
+
+void init_storage_array() {
+
+    for (size_t i = 0; i < ZMK_KEYMAP_LAYERS_LEN; i++) {
+        for (size_t j = 0; j < ZMK_KEYMAP_LEN; j++) {
+            copy_to_storage_array(i, j);
+        }
+    }
+}
+
+/*
+static int vial_settings_cb(const char *name, size_t len, settings_read_cb read_cb,
+                                      void *cb_arg, void *param) {
+    const char *next;
+    if (settings_name_steq(name, "state", &next) && !next) {
+        if (len != sizeof()) {
+            return -EINVAL;
+        }
+
+        //int rc = read_cb(cb_arg, &state, sizeof(state));
+        //return MIN(rc, 0);
+    }
+    return -ENOENT;
+}*/
+
+void load_key_mapping(int layer, int key) {
+    char path[] = "vial/__/___";
+    path[5] = '0' + layer % 10;
+    path[6] = '0' + layer / 10;
+
+    path[10] = '0' + key % 10;
+    path[9] = '0' + key / 10 % 10;
+    path[8] = '0' + key / 10 / 10 % 10;
+
+    int ret = settings_runtime_get(path, (void *) &(zmk_keymap_storage[layer][key]),
+                                   sizeof(struct zmk_behavior_binding_storage));
+    if (ret != sizeof(struct zmk_behavior_binding_storage)) {
+        LOG_ERR("failed to save keybind layer: %d, key %d", layer, key);
+        return;
+    }
+    copy_from_storage_array(layer, key);
+}
+
+void save_key_mapping(int layer, int key) {
+
+    copy_to_storage_array(layer, key);
+    char path[] = "vial/__/___";
+    path[5] = '0' + layer % 10;
+    path[6] = '0' + layer / 10;
+
+    path[10] = '0' + key % 10;
+    path[9] = '0' + key / 10 % 10;
+    path[8] = '0' + key / 10 / 10 % 10;
+
+    int ret = settings_runtime_set(path,(void *) &(zmk_keymap_storage[layer][key]),
+                                   sizeof(struct zmk_behavior_binding_storage));
+    if (ret != 0) {
+        LOG_ERR("failed to save keybind layer: %d, key %d", layer, key);
+    }
+}
+
+int vial_init() {
+    settings_subsys_init();
+    int ret = settings_runtime_get("vial/00/000", &(zmk_keymap_storage[0][0]),
+                                   sizeof(struct zmk_behavior_binding_storage));
+    if (ret != sizeof(struct zmk_behavior_binding_storage)) {
+        LOG_DBG("settings not yet initialized");
+        for (size_t i = 0; i < ZMK_KEYMAP_LAYERS_LEN; i++) {
+            for (size_t j = 0; j < ZMK_KEYMAP_LEN; j++) {
+                save_key_mapping(i, j);
+            }
+        }
+        return 0;
+    }
+    for (size_t i = 0; i < ZMK_KEYMAP_LAYERS_LEN; i++) {
+        for (size_t j = 0; j < ZMK_KEYMAP_LEN; j++) {
+            load_key_mapping(i, j);
+        }
+    }
+    return 0;
+}
